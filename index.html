@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Studio - Premium QR Generator</title>
+
+<script src="https://unpkg.com/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;color:#fff;
+ background:radial-gradient(ellipse at center,#123c79,#06142b 65%,#020817);
+ min-height:100vh;padding:35px 15px;
+}
+header{text-align:center;margin-bottom:28px}
+header h1{font-size:34px;margin:0;color:#68b8ff}
+header p{color:#a8c1df}
+.container{
+ max-width:1200px;margin:auto;
+ display:grid;grid-template-columns:1.1fr .9fr;gap:16px;
+}
+.panel{
+ background:rgba(9,24,48,.92);
+ border:1px solid #29496e;border-radius:23px;
+ padding:25px;box-shadow:0 15px 45px #0006;
+}
+h3{margin:5px 0 18px}
+.types{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.type{
+ background:#0b1930;border:1px solid #30415a;
+ color:white;border-radius:10px;padding:14px 3px;
+ cursor:pointer;font-size:12px;min-height:67px;
+}
+.type.active,.type:hover{border-color:#3485ff;background:#12346a}
+label{display:block;color:#c6d8ee;margin:15px 0 7px;font-size:13px}
+input,select,textarea{
+ width:100%;padding:13px;border:1px solid #354b67;
+ border-radius:9px;background:#071426;color:white;
+ outline:none;font-size:14px;
+}
+input:focus,select:focus,textarea:focus{border-color:#3485ff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{
+ cursor:pointer;border:1px solid #354b67;
+ color:white;background:#10213a;border-radius:10px;
+ padding:13px;font-weight:bold;
+}
+button:hover{border-color:#4895ff}
+.primary{
+ width:100%;background:#2165ef;border:0;
+ padding:16px;margin-top:20px;font-size:16px;
+}
+.preview{
+ background:white;border-radius:18px;
+ min-height:350px;display:flex;align-items:center;
+ justify-content:center;padding:15px;margin:18px 0;
+}
+#qr canvas,#qr svg{max-width:100%;height:auto!important}
+#qr img{max-width:100%;height:auto}
+.formats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.formats button{padding:13px 3px}
+.note{text-align:center;color:#a9c1dc;font-size:12px;margin-top:18px}
+#status{text-align:center;color:#70c4ff;margin-top:12px;font-size:13px}
+footer{text-align:center;color:#7896b9;margin-top:30px;font-size:12px}
+@media(max-width:800px){
+ .container{grid-template-columns:1fr}
+ .panel{padding:18px}
+}
+@media(max-width:420px){
+ .types{grid-template-columns:repeat(3,1fr)}
+ .row{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>✦ QR STUDIO</h1>
+<p>Create beautiful QR codes instantly</p>
+</header>
+
+<div class="container">
+
+<section class="panel">
+<h3>① Choose QR code type</h3>
+
+<div class="types" id="types">
+<button class="type active" data-type="url">🔗<br>URL / Link</button>
+<button class="type" data-type="text">▤<br>Text</button>
+<button class="type" data-type="email">✉<br>Email</button>
+<button class="type" data-type="phone">☎<br>Phone</button>
+<button class="type" data-type="sms">💬<br>SMS</button>
+<button class="type" data-type="wifi">◉<br>Wi-Fi</button>
+<button class="type" data-type="vcard">▣<br>vCard</button>
+<button class="type" data-type="event">▦<br>Event</button>
+<button class="type" data-type="location">⌖<br>Location</button>
+<button class="type" data-type="whatsapp">◉<br>WhatsApp</button>
+</div>
+
+<h3 style="margin-top:25px">② Enter data</h3>
+<label id="dataLabel">Website URL</label>
+<textarea id="data" rows="2" placeholder="https://example.com"></textarea>
+<p id="hint" style="font-size:11px;color:#91add0">Enter your website link.</p>
+
+<h3 style="margin-top:25px">③ Customize your QR code</h3>
+
+<div class="row">
+<div>
+<label>Foreground</label>
+<input type="color" id="fg" value="#101827">
+</div>
+<div>
+<label>Background</label>
+<input type="color" id="bg" value="#ffffff">
+</div>
+</div>
+
+<div class="row">
+<div>
+<label>QR code style</label>
+<select id="dots">
+<option value="rounded">Rounded</option>
+<option value="dots">Dots</option>
+<option value="square">Square</option>
+<option value="extra-rounded">Extra rounded</option>
+<option value="classy">Classy</option>
+<option value="classy-rounded">Classy rounded</option>
+</select>
+</div>
+<div>
+<label>Corner shape</label>
+<select id="corners">
+<option value="extra-rounded">Extra rounded</option>
+<option value="square">Square</option>
+<option value="dot">Dot</option>
+</select>
+</div>
+</div>
+
+<div class="row">
+<div>
+<label>Dot shape</label>
+<select id="cornerDots">
+<option value="dot">Rounded</option>
+<option value="square">Square</option>
+</select>
+</div>
+<div>
+<label>Output size</label>
+<select id="size">
+<option value="512">512 px</option>
+<option value="1024" selected>1024 px</option>
+<option value="2048">2048 px</option>
+</select>
+</div>
+</div>
+
+<label>Optional Logo</label>
+<input type="file" id="logo" accept="image/png,image/jpeg,image/webp">
+
+<button class="primary" id="generate">▦ Generate QR Code</button>
+<div id="status">Ready to create your QR code.</div>
+<p class="note">🔒 Your data stays in your browser.</p>
+</section>
+
+<section class="panel">
+<h3>Your QR code</h3>
+<div class="preview">
+<div id="qr"></div>
+</div>
+<p class="note">▣ Scan with your phone before printing.</p>
+
+<div class="formats">
+<button onclick="downloadQR('png')">▧ PNG</button>
+<button onclick="downloadQR('svg')">&lt;/&gt; SVG</button>
+<button onclick="downloadPDF()">▤ PDF</button>
+<button onclick="downloadQR('webp')">▧ WebP</button>
+</div>
+
+<button class="primary" id="downloadAll">⬇ Download all</button>
+</section>
+
+</div>
+
+<footer>QR Studio © 2026 · Made with care</footer>
+
+<script>
+let currentType="url";
+let qr=null;
+let logoURL=null;
+
+const data=document.getElementById("data");
+const labels={
+ url:["Website URL","https://example.com","Enter your website link."],
+ text:["Your Text","Enter your message","Enter any text."],
+ email:["Email Address","hello@example.com","Enter an email address."],
+ phone:["Phone Number","+911234567890","Enter phone number with country code."],
+ sms:["Phone | Message","+911234567890 | Hello","Separate number and message with |."],
+ wifi:["Wi-Fi Name | Password","MyWiFi | password123","Format: WiFi name | password | security (optional)."],
+ vcard:["Name | Phone | Email","Your Name | +911234567890 | hello@example.com","Enter name, phone and email separated by |."],
+ event:["Title | Start | End | Location","My Event | 20261210T100000 | 20261210T110000 | Delhi","Dates must use YYYYMMDDTHHMMSS format."],
+ location:["Latitude, Longitude","28.6139,77.2090","Enter latitude and longitude."],
+ whatsapp:["Phone | Message","911234567890 | Hello!","Use country code without +, then message."]
+};
+
+document.querySelectorAll(".type").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+  document.querySelectorAll(".type").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  currentType=btn.dataset.type;
+  document.getElementById("dataLabel").textContent=labels[currentType][0];
+  data.placeholder=labels[currentType][1];
+  document.getElementById("hint").textContent=labels[currentType][2];
+ });
+});
+
+function makePayload(){
+ const v=data.value.trim();
+ const parts=v.split("|").map(x=>x.trim());
+
+ if(!v)throw Error("Please enter your data.");
+
+ switch(currentType){
+ case "url":
+  if(!/^https?:\/\//i.test(v))throw Error("Enter a valid URL starting with https://");
+  return v;
+ case "text":return v;
+ case "email":
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))throw Error("Enter a valid email address.");
+  return "mailto:"+v;
+ case "phone":return "tel:"+v;
+ case "sms":
+  if(!parts[0]||!parts[1])throw Error("Enter phone and message separated by |.");
+  return "SMSTO:"+parts[0]+":"+parts.slice(1).join("|");
+ case "wifi":{
+  if(!parts[0]||!parts[1])throw Error("Enter Wi-Fi name and password separated by |.");
+  const security=parts[2]||"WPA";
+  return "WIFI:T:"+security+";S:"+parts[0]+";P:"+parts[1]+";;";
+ }
+ case "vcard":
+  if(parts.length<3)throw Error("Enter name, phone and email separated by |.");
+  return "BEGIN:VCARD\nVERSION:3.0\nFN:"+parts[0]+"\nTEL:"+parts[1]+"\nEMAIL:"+parts[2]+"\nEND:VCARD";
+ case "event":
+  if(parts.length<4)throw Error("Enter all four event details separated by |.");
+  return "BEGIN:VEVENT\nSUMMARY:"+parts[0]+"\nDTSTART:"+parts[1]+"\nDTEND:"+parts[2]+"\nLOCATION:"+parts[3]+"\nEND:VEVENT";
+ case "location":{
+  const coords=v.split(",").map(x=>x.trim());
+  if(coords.length!==2||!coords.every(x=>Number.isFinite(Number(x))))throw Error("Enter latitude, longitude.");
+  return "geo:"+coords[0]+","+coords[1];
+ }
+ case "whatsapp":
+  if(!parts[0])throw Error("Enter a WhatsApp phone number.");
+  return "https://wa.me/"+parts[0].replace(/\D/g,"")+(parts[1]?"?text="+encodeURIComponent(parts.slice(1).join("|")):"");
+ }
+}
+
+async function generate(){
+ try{
+  if(typeof QRCodeStyling==="undefined")throw Error("QR library load nahi hui. Internet connection check karo.");
+  const payload=makePayload();
+  const size=Number(document.getElementById("size").value);
+
+  qr=new QRCodeStyling({
+   width:size,height:size,type:"svg",data:payload,
+   margin:18,
+   dotsOptions:{color:document.getElementById("fg").value,type:document.getElementById("dots").value},
+   backgroundOptions:{color:document.getElementById("bg").value},
+   cornersSquareOptions:{color:document.getElementById("fg").value,type:document.getElementById("corners").value},
+   cornersDotOptions:{color:document.getElementById("fg").value,type:document.getElementById("cornerDots").value},
+   image:logoURL||undefined,
+   imageOptions:{crossOrigin:"anonymous",margin:7,imageSize:.25}
+  });
+
+  const box=document.getElementById("qr");
+  box.innerHTML="";
+  qr.append(box);
+  document.getElementById("status").textContent="✓ QR Code generated successfully!";
+ }catch(e){
+  document.getElementById("status").textContent="⚠ "+e.message;
+ }
+}
+
+document.getElementById("logo").addEventListener("change",e=>{
+ const file=e.target.files[0];
+ if(file){
+  if(!file.type.startsWith("image/"))return;
+  if(logoURL)URL.revokeObjectURL(logoURL);
+  logoURL=URL.createObjectURL(file);
+  generate();
+ }
+});
+
+document.getElementById("generate").addEventListener("click",generate);
+
+["fg","bg","dots","corners","cornerDots","size"].forEach(id=>{
+ document.getElementById(id).addEventListener("change",()=>{
+  if(qr)generate();
+ });
+});
+
+async function downloadQR(format){
+ if(!qr){alert("Please generate a QR code first.");return;}
+ try{
+  await qr.download({name:"QR-Studio",extension:format});
+ }catch(e){alert("Download failed: "+e.message);}
+}
+
+async function downloadPDF(){
+ if(!qr){alert("Please generate a QR code first.");return;}
+ try{
+  const blob=await qr.getRawData("png");
+  const url=URL.createObjectURL(blob);
+  const img=new Image();
+  img.onload=()=>{
+   const pdf=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+   const width=130;
+   pdf.addImage(img,"PNG",40,65,width,width);
+   pdf.save("QR-Studio.pdf");
+   URL.revokeObjectURL(url);
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);alert("PDF image conversion failed.");};
+  img.src=url;
+ }catch(e){alert("PDF download failed: "+e.message);}
+}
+
+document.getElementById("downloadAll").addEventListener("click",async()=>{
+ if(!qr){alert("Generate a QR code first.");return;}
+ for(const format of ["png","svg","webp"]){
+  await downloadQR(format);
+  await new Promise(resolve=>setTimeout(resolve,400));
+ }
+ await downloadPDF();
+});
+
+generate();
+</script>
+
+</body>
+</html>
